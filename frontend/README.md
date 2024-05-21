@@ -1,6 +1,6 @@
 # Vue前端
 
-##项目运行
+## 项目运行
 
 需要axios、vue-router和echarts
 
