@@ -9,25 +9,47 @@ import loader from '@/components/loader.vue';
 import axios from "axios";
 import api from '../api/api.js';
 
-
 export default {
   data() {
     return {
       items: [],
       items_count:[],
-      selectedIndex: 0,
+      selectedIndex: -1,
       chart_name: 'main',
       is_loading: true,
       query_key: '',
-      query_type: ''
+      query_type: '',
+      showLeftContainer: false,
+      isMobile: false
     }
-  }, mounted() {
+  },
+  mounted() {
     this.get_keywords()
+    this.checkMobile()
+    window.addEventListener('resize', this.checkMobile)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.checkMobile)
   },
   methods: {
-    //实现导航点击变色
+    checkMobile() {
+      this.isMobile = window.innerWidth < 768
+    },
+    handleTotalClick() {
+      this.chart_name = 'main';
+      this.selectedIndex = -1;
+      if (this.isMobile) {
+        this.showLeftContainer = false
+      }
+      this.$nextTick(() => {
+        this.scrollToAnchor('chart_all_key');
+      });
+    },
     getTopic(index, id) {
       this.selectedIndex = index;
+      if (this.isMobile) {
+        this.showLeftContainer = false
+      }
     },
     //实现页面内平滑跳转
     scrollToAnchor(anchor) {
@@ -54,6 +76,7 @@ export default {
         if (err.response.status === 500)
           window.alert("500\n网络异常，请稍后再试");
         this.is_loading = false
+        this.initScrollListener();
         console.log(err)
       })
     }
@@ -75,9 +98,27 @@ export default {
   <div v-if="is_loading" class="loader">
     <loader></loader>
   </div>
+  <button
+      v-if="isMobile"
+      class="nav-toggle"
+      :class="{ active: showLeftContainer }"
+      @click="showLeftContainer = !showLeftContainer"
+  >
+    ☰
+  </button>
   <div class="charts-page">
-    <div class="left-container" id="left-container">
+
+    <div
+        class="left-container"
+        id="left-container"
+        :style="{ 'z-index': isMobile ? 1000 : 'auto' }"
+        v-show="!isMobile || showLeftContainer">
       <ul>
+        <li>
+          <a href="#chart_all_key"
+             @click.prevent="handleTotalClick"
+             :class="selectedIndex === -1 ? 'active' : ''">总共统计量</a>
+        </li>
         <li v-for="(item,index) in items">
           <a :href="'#'+item" :class="selectedIndex === index ? 'active':''"
              @click="getTopic(index, item.topicClassId); chart_name='main'"
@@ -87,7 +128,7 @@ export default {
     </div>
     <div class="charts" id="charts">
       <div v-if=" chart_name === 'area'">
-        <button @click="chart_name='main'; selectedIndex = 0">
+        <button @click="chart_name='main'; selectedIndex = -1">
           <span class="shadow"></span>
           <span class="edge"></span>
           <span class="front text">返回</span>
@@ -95,7 +136,7 @@ export default {
         <chart_area :q_keyword="query_key" :q_type="query_type"></chart_area>
       </div>
       <div v-if=" chart_name === 'salary'">
-        <button @click="chart_name='main'; selectedIndex = 0">
+        <button @click="chart_name='main'; selectedIndex = -1">
           <span class="shadow"></span>
           <span class="edge"></span>
           <span class="front text">返回</span>
@@ -103,7 +144,7 @@ export default {
         <chart_salary :q_keyword="query_key" :q_type="query_type"></chart_salary>
       </div>
       <div v-if=" chart_name === 'degree'">
-        <button @click="chart_name='main'; selectedIndex = 0">
+        <button @click="chart_name='main'; selectedIndex = -1">
           <span class="shadow"></span>
           <span class="edge"></span>
           <span class="front text">返回</span>
@@ -111,7 +152,7 @@ export default {
         <chart_degree :q_keyword="query_key" :q_type="query_type"></chart_degree>
       </div>
       <div v-if=" chart_name === 'exp'">
-        <button @click="chart_name='main'; selectedIndex = 0">
+        <button @click="chart_name='main'; selectedIndex = -1">
           <span class="shadow"></span>
           <span class="edge"></span>
           <span class="front text">返回</span>
@@ -119,15 +160,15 @@ export default {
         <chart_exp :q_keyword="query_key" :q_type="query_type"></chart_exp>
       </div>
       <div v-if=" chart_name === 'technique'">
-        <button @click="chart_name='main'; selectedIndex = 0">
+        <button @click="chart_name='main'; selectedIndex = -1">
           <span class="shadow"></span>
           <span class="edge"></span>
           <span class="front text">返回</span>
         </button>
         <chart_skill :q_keyword="query_key" :q_type="query_type"></chart_skill>
       </div>
-      <div v-if="chart_name === 'main'">
-        <chart_all_key></chart_all_key>
+      <div v-if="chart_name === 'main'" id="chart_all_key">
+        <chart_all_key ></chart_all_key>
       </div>
       <div class="charts-list" v-for="item in items" v-if=" chart_name === 'main'">
         <div>
@@ -174,6 +215,42 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+/*新增移动端适配导航*/
+/* 新增导航按钮样式 */
+.nav-toggle {
+  position: fixed;
+  right: 15px;
+  top: 50px;
+  z-index: 1001;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  font-size: 20px;
+}
+/* 激活状态样式 */
+.nav-toggle.active {
+  background: #888;
+  color: white;
+  border-color: #666;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 修改移动端左侧容器样式 */
+@media (max-width: 768px) {
+  #left-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 200px;
+    background: white;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  }
+}
+
 
 a {
   color: #484848;
@@ -200,11 +277,6 @@ a {
   overscroll-behavior: contain;
 }
 
-@media (max-width: 768px) {
-  #left-container {
-    display: none;
-  }
-}
 
 ul {
   list-style: none;
