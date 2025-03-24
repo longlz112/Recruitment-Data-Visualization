@@ -1,5 +1,6 @@
 # Recruitment Data Visualization Project
-
+- en [English](README.en.md)
+- zh_CN [简体中文](README.md)
 #### Introduction
 
 A simple data visualization project developed with Vue + Flask. Utilizes ECharts, PySpark/Pandas; includes multi-process crawling and sample data.

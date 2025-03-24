@@ -1,5 +1,7 @@
 # 招聘数据可视化项目
 
+- en [English](README.en.md)
+- zh_CN [简体中文](README.md)
 #### 介绍
 
 使用vue+flask编写的简单数据可视化项目；使用echarts、pyspark/pandas；运用多进程爬虫，含数据；
